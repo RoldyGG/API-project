@@ -22,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/RoldyGG/API-project/issues"
   },
-  "homepage": "https://github.com/RoldyGG/API-project#readme"
+  "homepage": "https://github.com/RoldyGG/API-project#readme",
+  "dependencies": {
+    "pg": "^8.11.3"
+  }
 }
