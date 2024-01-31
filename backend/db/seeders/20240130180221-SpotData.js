@@ -40,16 +40,17 @@ module.exports = {
       },
       {
         ownerId: 1,
-        address: '1038 Rose Blvd',
-        city: 'San Bernandino',
-        state: 'California',
-        country: 'United States of America',
+        address: "1038 Rose Blvd",
+        city: "San Bernandino",
+        state: "California",
+        country: "United States of America",
         lat: 30.7483645,
         lng: -111.7565756,
-        name: 'The Beachfront',
-        description: 'A beautiful beach front property for those looking for something more tropical',
-        price: 300
-      }
+        name: "The Beachfront",
+        description:
+          "A beautiful beach front property for those looking for something more tropical",
+        price: 300,
+      },
     ]);
   },
 
@@ -60,6 +61,6 @@ module.exports = {
      * Example:
      * await queryInterface.bulkDelete('People', null, {});
      */
-    await queryInterface.bulkDelete('Spots', null, {})
+    await queryInterface.bulkDelete("Spots", null, {});
   },
 };
