@@ -1,21 +1,56 @@
 const express = require("express");
 const { Spot } = require("../../db/models");
+const { Review } = require("../../db/models");
+const { User } = require("../../db/models");
+const { ReviewImage } = require("../../db/models");
 const router = express.Router();
 
-router.get("/spots", async (req, res) => {
+router.get("/", async (req, res) => {
   const payload = await Spot.findAll();
 
-  res.json(payload);
+  return res.json(payload);
 });
 
-router.get("/spots/:spotId", async (req, res) => {
+router.get("/current", async (req, res) => {
+  const { user } = req;
+
+  if (user) {
+    const payload = await Spot.findAll({
+      where: {
+        ownerId: user.id,
+      },
+    });
+    res.json(payload);
+  }
+});
+
+router.get("/:spotId/reviews", async (req, res) => {
   const { spotId } = req.params;
 
-  const spotDetails = await Spot.findOne({
+  const spotReviews = await Review.findAll({
+    attributes: ['id'],
     where: {
-      id: spotId,
+      spotId
     },
+    include: {
+      model: User,
+      attributes: ['id', 'firstName', 'lastName']
+    }
   });
+
+  if (spotReviews) {
+    res.json(spotReviews);
+  } else {
+    res.status(404).json({
+      message: "Spot couldn't be found",
+    });
+  }
+});
+
+router.get("/:spotId", async (req, res) => {
+  const { spotId } = req.params;
+
+  const spotDetails = await Spot.findByPk(spotId);
 
   if (spotDetails) {
     return res.json(spotDetails);
@@ -26,7 +61,7 @@ router.get("/spots/:spotId", async (req, res) => {
   }
 });
 
-router.post("/spots", async (req, res) => {
+router.post("/", async (req, res) => {
   const { address, city, state, country, lat, lng, name, description, price } =
     req.body;
 
@@ -45,12 +80,23 @@ router.post("/spots", async (req, res) => {
   res.json(newSpot);
 });
 
-router.put("/spots/:spotId", async (req, res) => {
+router.put("/:spotId", async (req, res) => {
   const { spotId } = req.params;
-  const { address, city, state, country, lat, lng, name, description, price } =
-    req.body;
+  const {
+    ownerId,
+    address,
+    city,
+    state,
+    country,
+    lat,
+    lng,
+    name,
+    description,
+    price,
+  } = req.body;
   const spotUpdate = await Spot.findByPk(spotId);
   if (spotUpdate) {
+    spotUpdate.ownerId = ownerId || spotUpdate.ownerId;
     spotUpdate.address = address || spotUpdate.address;
     spotUpdate.city = city || spotUpdate.city;
     spotUpdate.state = state || spotUpdate.state;
@@ -71,7 +117,7 @@ router.put("/spots/:spotId", async (req, res) => {
   res.json(spotUpdate);
 });
 
-router.delete("spots/:spotId", async (req, res) => {
+router.delete("/:spotId", async (req, res) => {
   const { spotId } = req.params;
   const target = await Spot.findByPk(spotId);
 
