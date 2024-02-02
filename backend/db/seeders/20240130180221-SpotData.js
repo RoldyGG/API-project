@@ -27,7 +27,7 @@ module.exports = {
         price: 123,
       },
       {
-        ownerId: 1,
+        ownerId: 2,
         address: "234 Disco Lane",
         city: "Albany",
         state: "New York",

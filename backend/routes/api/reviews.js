@@ -1,4 +1,6 @@
 const express = require("express");
+const { Sequelize } = require("sequelize");
+const { Op } = require("sequelize");
 const {
   Review,
   ReviewImage,
@@ -6,6 +8,9 @@ const {
   Spot,
   SpotImage,
 } = require("../../db/models");
+const { check } = require('express-validator');
+const { handleValidationErrors } = require('../../utils/validation');
+const { requireAuth } = require("../../utils/auth");
 const router = express.Router();
 
 router.get("/current", async (req, res) => {
@@ -140,20 +145,20 @@ router.put("/:reviewId", async (req, res) => {
   });
 });
 
-// router.delete("/:reviewId", async (req, res) => {
-//   const { reviewId } = req.params;
-//   const target = await Review.findByPk(reviewId);
+router.delete("/:reviewId", requireAuth, async (req, res) => {
+  const { reviewId } = req.params;
+  const currentUser = req.user.id;
 
-//   console.log(target.userId)
-//   // if (target) {
-//   //   await target.destroy();
-//   //   return res.json({
-//   //     message: "Successfully deleted",
-//   //   });
-//   // }
-//   // return res.status(404).json({
-//   //   message: "Review could not be found",
-//   // });
-// });
+  const reviews = await Review.findByPk(reviewId);
+  if (!reviews) {
+    return res.status(404).json({ message: "Review couldn't be found" });
+  };
+  if(reviews.userId !== currentUser){
+    return res.status(403).json({ message: "You are not authorized."});
+};
+await reviews.destroy();
+
+return res.status(200).json({ message: "Successfully deleted" });
+});
 
 module.exports = router;

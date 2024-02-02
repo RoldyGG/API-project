@@ -1,10 +1,64 @@
 const express = require("express");
-const { Spot } = require("../../db/models");
-const { Review } = require("../../db/models");
-const { User } = require("../../db/models");
-const { ReviewImage } = require("../../db/models");
-const { SpotImage } = require("../../db/models");
+const {
+  Spot,
+  Review,
+  User,
+  ReviewImage,
+  SpotImage,
+  Booking
+} = require("../../db/models");
+
 const router = express.Router();
+
+router.get("/:spotId/bookings", async (req, res) => {
+  const { spotId } = req.params;
+  const currentUser = req.user.id;
+  const getBookings = await Booking.findAll({
+    attributes: ["id", "spotId", "userId", "startDate", "endDate", "createdAt", "updatedAt"],
+    where: {
+      spotId
+    }
+  })
+  const getUser = await User.findByPk(currentUser);
+
+  if(getBookings.length) {
+    if(currentUser === getBookings[0].userId) {
+      const bookingObj = {
+        Bookings: [
+          {
+            User:{
+              id: getUser.id,
+              firstName: getUser.firstName,
+              lastName: getUser.lastName,
+            },
+            id: getBookings[0].id,
+            spotId: getBookings[0].spotId,
+            userId: currentUser,
+            startDate: getBookings[0].startDate,
+            endDate: getBookings[0].endDate,
+            createdAt: getBookings[0].createdAt,
+            updatedAt: getBookings[0].updatedAt
+          }
+        ]
+      }
+      return res.json(bookingObj)
+    } else {
+      bookingObj = {
+        Bookings: [
+          {
+            spotId: getBookings[0].spotId,
+            startDate: getBookings[0].startDate,
+            endDate: getBookings[0].endDate
+          }
+        ]
+      }
+      return res.json(bookingObj)
+    }
+  }
+  return res.status(404).json({
+    message: "Spot couldn't be found"
+  })
+})
 
 router.get("/:spotId/reviews", async (req, res) => {
   const { spotId } = req.params;
