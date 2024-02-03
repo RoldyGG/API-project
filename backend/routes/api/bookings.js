@@ -3,7 +3,7 @@ const { Booking, Spot, SpotImage } = require("../../db/models");
 const { requireAuth } = require("../../utils/auth");
 const router = express.Router();
 
-router.get("/current", async (req, res) => {
+router.get("/current", requireAuth, async (req, res) => {
   const currentUser = req.user.id;
   const userBookings = await Booking.findAll({
     where: {
