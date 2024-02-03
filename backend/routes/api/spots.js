@@ -6,66 +6,55 @@ const {
   ReviewImage,
   SpotImage,
   Booking,
+  sequelize
 } = require("../../db/models");
 const { requireAuth } = require("../../utils/auth");
+const { OP } = require("sequelize");
 const router = express.Router();
 
-router.get("/:spotId/bookings", requireAuth, async (req, res) => {
+router.get("/:spotId/bookings", requireAuth, async (req, res,) => {
   const { spotId } = req.params;
+  const spotCheck = Spot.findByPk(spotId);
   const currentUser = req.user.id;
-  const getBookings = await Booking.findAll({
-    attributes: [
-      "id",
-      "spotId",
-      "userId",
-      "startDate",
-      "endDate",
-      "createdAt",
-      "updatedAt",
-    ],
-    where: {
-      spotId,
-    },
-  });
-  const getUser = await User.findByPk(currentUser);
 
-  if (getBookings.length) {
-    if (currentUser === getBookings[0].userId) {
-      const bookingObj = {
-        Bookings: [
-          {
-            User: {
-              id: getUser.id,
-              firstName: getUser.firstName,
-              lastName: getUser.lastName,
-            },
-            id: getBookings[0].id,
-            spotId: getBookings[0].spotId,
-            userId: currentUser,
-            startDate: getBookings[0].startDate,
-            endDate: getBookings[0].endDate,
-            createdAt: getBookings[0].createdAt,
-            updatedAt: getBookings[0].updatedAt,
-          },
-        ],
-      };
-      return res.json(bookingObj);
+  if(spotCheck) {
+    if(spotCheck.ownerId === currentUser) {
+      const userBookings = await Booking.findAll({
+        where: {
+          spotId: Number(spotId)
+        },
+        include: {
+          Model: User,
+          attributes : {
+            exclude: [
+              "username",
+              "hashedPassword",
+              "email",
+              "createdAt",
+              "updatedAt",
+            ],
+          }
+        }
+      })
+
+      return res.json(userBookings)
     } else {
-      bookingObj = {
-        Bookings: [
-          {
-            spotId: getBookings[0].spotId,
-            startDate: getBookings[0].startDate,
-            endDate: getBookings[0].endDate,
-          },
-        ],
-      };
-      return res.json(bookingObj);
+      const userlessBookings = await Booking.findAll({
+        where: {
+          spotId: Number(spotId)
+        },
+        attributes: {
+          exclude: ["userId", "createdAt", "updatedAt"]
+        }
+      })
+
+      return res.json(userlessBookings)
     }
   }
+
   return res.status(404).json({
-    message: "Spot couldn't be found",
-  });
+    message: "Spot couldn't be found"
+  })
 });
 
 router.get("/:spotId/reviews", async (req, res) => {
