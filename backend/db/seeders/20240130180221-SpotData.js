@@ -1,4 +1,9 @@
 "use strict";
+
+let options = {};
+if (process.env.NODE_ENV === "production") {
+  options.schema = process.env.SCHEMA; // define your schema in options object
+}
 const { Spot } = require("../models");
 
 /** @type {import('sequelize-cli').Migration} */
@@ -61,6 +66,7 @@ module.exports = {
      * Example:
      * await queryInterface.bulkDelete('People', null, {});
      */
-    await queryInterface.bulkDelete("Spots", null, {});
+    options.tableName = "Spots"
+    await queryInterface.bulkDelete(options, null, {});
   },
 };
