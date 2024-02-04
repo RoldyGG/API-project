@@ -80,17 +80,13 @@ router.post("/:reviewId/images", requireAuth, async (req, res) => {
   });
 
   if (target) {
-
     if (images.length < 10) {
-
       if (currentUser === target.userId) {
-
         const newImage = await ReviewImage.create({
           reviewId: Number(reviewId),
           url,
         });
         return res.json(newImage);
-
       } else {
         return res.status(403).json({ message: "You are not authorized." });
       }
