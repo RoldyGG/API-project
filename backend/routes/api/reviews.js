@@ -6,17 +6,66 @@ const { requireAuth } = require("../../utils/auth");
 const router = express.Router();
 
 router.get("/current", requireAuth, async (req, res) => {
-  const currentUser = req.user.id;
   const reviews = await Review.findAll({
-    where: {
-      userId: currentUser
+    include: [
+      {
+        model: User,
+        attributes: {
+          exclude: [
+            "username",
+            "hashedPassword",
+            "email",
+            "createdAt",
+            "updatedAt",
+          ],
+        },
       },
-    include: {
-        model: User
-      }
+      {
+        model: Spot,
+        attributes: {
+          exclude: ["description", "createdAt", "updatedAt"],
+        },
+      },
+      {
+        model: ReviewImage,
+        attributes: {
+          exclude: ["reviewId", "createdAt", "updatedAt"],
+        },
+      },
+    ],
+    where: { userId: req.user.id },
+    attributes: { exclude: ["userId"] },
   });
+  const reviewArray = [];
 
-  return res.json(reviews);
+  reviews.forEach((item) => {
+    const reviewObj = item.toJSON();
+    reviewArray.push(reviewObj);
+  });
+  for (let i = 0; i < reviewArray.length; i++) {
+    let spotId = reviewsArr[i]["Spot"]["id"];
+    const spotImages = await SpotImage.findOne({
+      where: {
+        spotId: spotId,
+        preview: true,
+      },
+      attributes: ["url", "preview"],
+    });
+    if (spotImages) {
+      const previewImg = spotImg.toJSON();
+
+      const spot = reviewsArr[i]["Spot"];
+      spot.previewImage = previewImg.url;
+
+      reviewsArr[i].Spot = spot;
+    } else {
+      reviewsArr[i]["Spot"].previewImage = "no preview image set";
+    }
+  }
+  const currentUserObj = {};
+  currentUserObj.Reviews = reviewArray;
+
+  return res.json(currentUserObj);
 });
 
 router.post("/:reviewId/images", requireAuth, async (req, res) => {
@@ -31,16 +80,20 @@ router.post("/:reviewId/images", requireAuth, async (req, res) => {
   });
 
   if (target) {
+
     if (images.length < 10) {
-      if (currentUser === target.id) {
+
+      if (currentUser === target.userId) {
+
         const newImage = await ReviewImage.create({
           reviewId: Number(reviewId),
           url,
         });
+        return res.json(newImage);
+
       } else {
         return res.status(403).json({ message: "You are not authorized." });
       }
-      return res.json(newImage);
     } else {
       return res.status(403).json({
         message: "Maximum number of images for this resource was reached",
