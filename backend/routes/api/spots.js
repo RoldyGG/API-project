@@ -492,7 +492,7 @@ router.get("/", validateQuery, async (req, res) => {
 });
 
 //POST Images using spotId
-router.post("/:spotId/images", [requireAuth, validateSpot], async (req, res) => {
+router.post("/:spotId/images", requireAuth, async (req, res) => {
   const providedId = req.params.spotId;
   const { url, preview } = req.body;
   const findSpot = await Spot.findByPk(providedId);
