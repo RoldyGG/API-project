@@ -264,7 +264,12 @@ router.get("/:spotId/reviews", async (req, res) => {
       },
     ],
   });
+  if(Reviews) {
   return res.json(Reviews);
+  }
+
+  return res.status(400).json({
+    message: "Review couldn't be found"
 });
 
 //POST a review by spotId
