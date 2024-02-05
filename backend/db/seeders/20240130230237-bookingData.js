@@ -6,7 +6,6 @@ if (process.env.NODE_ENV === "production") {
 const { Booking } = require("../models");
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-
   async up(queryInterface, Sequelize) {
     /**
      * Add seed commands here.
@@ -46,7 +45,13 @@ module.exports = {
      * Example:
      * await queryInterface.bulkDelete('People', null, {});
      */
-    options.tableName = "Bookings"
-    await queryInterface.bulkDelete(options, null, {});
+    options.tableName = "Bookings";
+    await queryInterface.bulkDelete(
+      options,
+      {
+        spotId: { [Op.in]: [1, 2, 3] },
+      },
+      {}
+    );
   },
 };

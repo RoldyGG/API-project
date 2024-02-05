@@ -57,7 +57,8 @@ module.exports = {
       {
         spotId: 4,
         userId: 5,
-        review: "They had flying chairs, and ai that keeps you company. Would recommend.",
+        review:
+          "They had flying chairs, and ai that keeps you company. Would recommend.",
         stars: 5,
       },
       {
@@ -77,6 +78,12 @@ module.exports = {
      * await queryInterface.bulkDelete('People', null, {});
      */
     options.tableName = "Reviews";
-    await queryInterface.bulkDelete(options, null, {});
+    await queryInterface.bulkDelete(
+      options,
+      {
+        spotId: { [Op.in]: [1, 2, 3, 4, 5, 6] },
+      },
+      {}
+    );
   },
 };

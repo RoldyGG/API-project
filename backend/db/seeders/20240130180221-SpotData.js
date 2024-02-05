@@ -1,5 +1,4 @@
 "use strict";
-
 let options = {};
 if (process.env.NODE_ENV === "production") {
   options.schema = process.env.SCHEMA; // define your schema in options object
@@ -65,8 +64,7 @@ module.exports = {
         lat: 344.7483645,
         lng: -11.7565756,
         name: "Tech Hideaway",
-        description:
-          "For those who love technology",
+        description: "For those who love technology",
         price: 1200,
       },
       {
@@ -91,8 +89,7 @@ module.exports = {
         lat: 333.7483645,
         lng: -333.7565756,
         name: "The Weird Place",
-        description:
-          "Weird things happen here...",
+        description: "Weird things happen here...",
         price: 666,
       },
       {
@@ -104,8 +101,7 @@ module.exports = {
         lat: 33.74856745,
         lng: -201.7565756,
         name: "The Snooty Stay",
-        description:
-          "Treat yourself like a celeberty for a day or more!",
+        description: "Treat yourself like a celeberty for a day or more!",
         price: 1000,
       },
     ]);
@@ -118,7 +114,24 @@ module.exports = {
      * Example:
      * await queryInterface.bulkDelete('People', null, {});
      */
-    options.tableName = "Spots"
-    await queryInterface.bulkDelete(options, null, {});
+    options.tableName = "Spots";
+    await queryInterface.bulkDelete(
+      options,
+      {
+        address: {
+          [Op.in]: [
+            "123 Disney Lane",
+            "234 Disco Lane",
+            "14755 Ventura Boulevard",
+            "1038 Rose Blvd",
+            "1 Infinite Loop Road",
+            "76 Calle De Raza",
+            "3333 Weird Lane",
+            "86753 Beverly Hills Street",
+          ],
+        },
+      },
+      {}
+    );
   },
 };
