@@ -29,8 +29,7 @@ const validateBooking = [
 //GET Current Booking
 router.get("/current", requireAuth, async (req, res) => {
   const currentUser = req.user.id;
-  const Bookings = await Booking.findAll({
-    attribuites: ["id", "spotId", "userId", "startDate", "endDate", "createdAt", "updatedAt"],
+  let Bookings = await Booking.findAll({
     where: {
       userId: currentUser,
     },
@@ -38,42 +37,35 @@ router.get("/current", requireAuth, async (req, res) => {
       {
         model: Spot,
         attributes: {
-          exclude: ["description", "createdAt", "updatedAt"],
+          exclude: ["createdAt", "updatedAt", "description"],
         },
+        include: [
+          {
+            model: SpotImage,
+            attributes: ["url"],
+            where: {
+              preview: true,
+            },
+            required: false,
+          },
+        ],
       },
     ],
   });
 
-  for (let i = 0; i < Bookings.length; i++) {
-    let json = Bookings[i].toJSON();
+  Bookings = Bookings.map((booking) => {
+    let url = null;
 
-    const previewimage = await SpotImage.findOne({
-      where: {
-        spotId: json.Spot.id,
-        preview: true,
-      },
-    });
+    if (booking.Spot.SpotImages.length > 0) {
+      url = booking.Spot.SpotImages[0].url;
+    }
+    booking = booking.toJSON();
+    booking.Spot.previewImage = url;
+    delete booking.Spot.SpotImages;
 
-    if (previewimage) {
-      json.Spot.previewImage = previewimage.url;
-    } else {
-      json.Spot.previewImage = null;
-    }
-    if (json.Spot.lat) {
-      json.Spot.lat = parseFloat(json.Spot.lat);
-    }
-    if (json.Spot.lng) {
-      json.Spot.lng = parseFloat(json.Spot.lng);
-    }
-    if (json.Spot.lat) {
-      json.Spot.lat = parseFloat(json.Spot.lat);
-    }
-    Bookings[i] = json;
-  }
-
-  res.json({
-    Bookings,
+    return booking;
   });
+  res.json({ Bookings });
 });
 
 //PUT Using bookingId

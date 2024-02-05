@@ -22,48 +22,49 @@ const validateReview = [
 ];
 
 router.get("/current", requireAuth, async (req, res) => {
-  const userId = req.user.id;
+  const currentUser = req.user.id;
 
-  let reviews = await Review.findAll({
-      where: {userId: userId},
-      include: [{
-          model: User,
-          attributes: ['id', 'firstName', 'lastName']
+  let Reviews = await Review.findAll({
+    where: { userId: currentUser },
+    include: [
+      {
+        model: User,
+        attributes: ["id", "firstName", "lastName"],
       },
       {
-          model: Spot,
-          attributes: {
-              exclude: ['description', 'createdAt', 'updatedAt']
+        model: Spot,
+        attributes: {
+          exclude: ["description", "createdAt", "updatedAt"],
+        },
+        include: {
+          model: SpotImage,
+          attributes: ["url"],
+          where: {
+            preview: true,
           },
-          include:{
-              model: SpotImage,
-              attributes: ['url'],
-              where: {
-                  preview: true
-              },
-              required: false
-          }
+          required: false,
+        },
       },
-  {
-      model: ReviewImage,
-      attributes: ['id', 'url']
-      }]
+      {
+        model: ReviewImage,
+        attributes: ["id", "url"],
+      },
+    ],
   });
 
-  // specifies spotImages to previewImages
-  reviews = reviews.map(review => {
-      let url = null;
+  Reviews = Reviews.map((review) => {
+    let url = null;
 
-      if (review.Spot.SpotImages.length > 0) {
-          url = review.Spot.SpotImages[0].url;
-      }
-      review = review.toJSON();
-      review.Spot.previewImage = url;
-      delete review.Spot.SpotImages;
+    if (review.Spot.SpotImages.length > 0) {
+      url = review.Spot.SpotImages[0].url;
+    }
+    review = review.toJSON();
+    review.Spot.previewImage = url;
+    delete review.Spot.SpotImages;
 
-      return review
+    return review;
   });
-  res.json({Reviews: reviews})
+  return res.json({ Reviews });
 });
 
 router.post("/:reviewId/images", requireAuth, async (req, res) => {
