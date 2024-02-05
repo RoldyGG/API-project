@@ -44,7 +44,7 @@ module.exports = {
         price: 255,
       },
       {
-        ownerId: 1,
+        ownerId: 3,
         address: "1038 Rose Blvd",
         city: "San Bernandino",
         state: "California",
@@ -55,6 +55,58 @@ module.exports = {
         description:
           "A beautiful beach front property for those looking for something more tropical",
         price: 300,
+      },
+      {
+        ownerId: 5,
+        address: "1 Infinite Loop Road",
+        city: "Silicone Valley",
+        state: "California",
+        country: "United States of America",
+        lat: 344.7483645,
+        lng: -11.7565756,
+        name: "Tech Hideaway",
+        description:
+          "For those who love technology",
+        price: 1200,
+      },
+      {
+        ownerId: 6,
+        address: "76 Calle De Raza",
+        city: "Villalobos",
+        state: "Michoacan",
+        country: "Mexico",
+        lat: 789.7483579,
+        lng: -11.7235756,
+        name: "Venga a gozar en la playa!",
+        description:
+          "Propiedad en frente del mar para los que le encanta la playa.",
+        price: 300,
+      },
+      {
+        ownerId: 4,
+        address: "3333 Weird Lane",
+        city: "Amarillo",
+        state: "Texas",
+        country: "United States of America",
+        lat: 333.7483645,
+        lng: -333.7565756,
+        name: "The Weird Place",
+        description:
+          "Weird things happen here...",
+        price: 666,
+      },
+      {
+        ownerId: 7,
+        address: "86753 Beverly Hills Street",
+        city: "East Lost Angeles",
+        state: "California",
+        country: "United States of America",
+        lat: 33.74856745,
+        lng: -201.7565756,
+        name: "The Snooty Stay",
+        description:
+          "Treat yourself like a celeberty for a day or more!",
+        price: 1000,
       },
     ]);
   },

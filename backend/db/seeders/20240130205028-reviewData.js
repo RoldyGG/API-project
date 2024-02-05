@@ -35,6 +35,37 @@ module.exports = {
         review: "The beach was amazing, I can't wait to visit again!",
         stars: 5,
       },
+      {
+        spotId: 6,
+        userId: 6,
+        review:
+          "Um I don't know what happened but I'm pretty sure I was abducted by aliens at night. Would not recommend bringing children here.",
+        stars: 4,
+      },
+      {
+        spotId: 6,
+        userId: 2,
+        review: "Beware the shadow people...",
+        stars: 5,
+      },
+      {
+        spotId: 5,
+        userId: 1,
+        review: "Me encanto tanto, espero ir otra vez",
+        stars: 5,
+      },
+      {
+        spotId: 4,
+        userId: 5,
+        review: "They had flying chairs, and ai that keeps you company. Would recommend.",
+        stars: 5,
+      },
+      {
+        spotId: 6,
+        userId: 8,
+        review: "This is the bad place!",
+        stars: 1,
+      },
     ]);
   },
 
@@ -45,7 +76,7 @@ module.exports = {
      * Example:
      * await queryInterface.bulkDelete('People', null, {});
      */
-    options.tableName = "Reviews"
+    options.tableName = "Reviews";
     await queryInterface.bulkDelete(options, null, {});
   },
 };

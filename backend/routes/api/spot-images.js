@@ -1,12 +1,9 @@
 const express = require("express");
-const bcrypt = require("bcryptjs");
-const { setTokenCookie } = require("../../utils/auth");
 const { SpotImage, Spot } = require("../../db/models");
-const { check } = require("express-validator");
-const { handleValidationErrors } = require("../../utils/validation");
 const { requireAuth } = require("../../utils/auth");
 const router = express.Router();
 
+//DELETE A spot image using imageId
 router.delete("/:imageId", requireAuth, async (req, res) => {
     const { imageId } = req.params;
     const currentUser = req.user.id;
@@ -17,7 +14,7 @@ router.delete("/:imageId", requireAuth, async (req, res) => {
       return res.status(404).json({ message: "Spot image couldn't be found" });
     };
     if(spotCheck.ownerId !== currentUser){
-      return res.status(403).json({ message: "You are not authorized."});
+      return res.status(403).json({ message: "Forbidden" });
   };
   await images.destroy();
 

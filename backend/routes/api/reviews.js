@@ -113,8 +113,11 @@ router.put("/:reviewId", [requireAuth, validateReview], async (req, res) => {
       await reviews.save();
       return res.json(reviews);
     }
+    return res.status(404).json({
+      message: "Forbidden",
+    });
   }
-  res.status(404).json({
+  return res.status(404).json({
     message: "Review couldn't be found",
   });
 });

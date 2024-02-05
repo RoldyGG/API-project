@@ -92,6 +92,22 @@ const validateReviews = [
   handleValidationErrors,
 ];
 
+const validateBooking = [
+  check('startDate')
+    .exists({ checkFalsy: true })
+    .withMessage('Start date is required'),
+  check('endDate')
+    .exists({ checkFalsy: true })
+    .custom((endDate, { req }) => {
+      if (new Date(req.body.startDate).getTime() >= new Date(endDate).getTime()) {
+        throw new Error('endDate cannot be on or before startDate');
+      }
+      return true;
+    }),
+  handleValidationErrors
+];
+
+//GET Current user's spots
 router.get("/current", requireAuth, async (req, res) => {
   const currentUser = req.user.id;
   const Spots = await Spot.findAll({
@@ -124,6 +140,7 @@ router.get("/current", requireAuth, async (req, res) => {
   return res.json({ Spots });
 });
 
+//GET Bookings by spotId
 router.get("/:spotId/bookings", requireAuth, async (req, res) => {
   const { spotId } = req.params;
   const spotCheck = await Spot.findByPk(spotId);
@@ -161,30 +178,27 @@ router.get("/:spotId/bookings", requireAuth, async (req, res) => {
   });
 });
 
-router.post("/:spotId/bookings", requireAuth, async (req, res) => {
+//POST a booking by spotId
+router.post("/:spotId/bookings", [requireAuth, validateBooking], async (req, res) => {
   const { spotId } = req.params;
   const { startDate, endDate } = req.body;
-  const currentUser = req.user.id
+  const currentUser = req.user.id;
   const bookingStartDate = new Date(startDate);
   const bookingEndDate = new Date(endDate);
   const currentTime = new Date();
 
   if (bookingStartDate < currentTime) {
-    return res
-      .status(400)
-      .json({
-        message: "Bad Request",
-        errors: { startDate: "startDate cannot be in the past" },
-      });
+    return res.status(400).json({
+      message: "Bad Request",
+      errors: { startDate: "startDate cannot be in the past" },
+    });
   }
 
   if (bookingEndDate <= bookingStartDate) {
-    return res
-      .status(400)
-      .json({
-        message: "Bad Request",
-        errors: { endDate: "endDate cannot be on or before startDate" },
-      });
+    return res.status(400).json({
+      message: "Bad Request",
+      errors: { endDate: "endDate cannot be on or before startDate" },
+    });
   }
 
   const spot = await Spot.findByPk(spotId);
@@ -229,6 +243,7 @@ router.post("/:spotId/bookings", requireAuth, async (req, res) => {
   return res.json(newBooking);
 });
 
+//GET Reviews by spotId
 router.get("/:spotId/reviews", async (req, res) => {
   const { spotId } = req.params;
   const Reviews = await Spot.findByPk(spotId, {
@@ -252,6 +267,7 @@ router.get("/:spotId/reviews", async (req, res) => {
   return res.json(Reviews);
 });
 
+//POST a review by spotId
 router.post(
   "/:spotId/reviews",
   [requireAuth, validateReviews],
@@ -288,6 +304,7 @@ router.post(
   }
 );
 
+//GET Spot using spotId
 router.get("/:spotId", async (req, res) => {
   const { spotId } = req.params;
   const spotDetails = await Spot.findByPk(spotId);
@@ -336,12 +353,13 @@ router.get("/:spotId", async (req, res) => {
     };
     return res.json(payload);
   } else {
-    res.status(404).json({
+    return res.status(404).json({
       message: "Spot couldn't be found",
     });
   }
 });
 
+//PUT Make edits to spot using spotId
 router.put("/:spotId", [requireAuth, validateSpot], async (req, res) => {
   const currentUser = req.user.id;
   const { spotId } = req.params;
@@ -374,14 +392,15 @@ router.put("/:spotId", [requireAuth, validateSpot], async (req, res) => {
       await spotUpdate.save();
       return res.json(spotUpdate);
     } else {
-      return res.status(403).json({ message: "You are not authorized." });
+      return res.status(403).json({ message: "Forbidden" });
     }
   }
-  res.status(404).json({
+  return res.status(404).json({
     message: "Spot couldn't be found",
   });
 });
 
+//DELETE A spot using spotId
 router.delete("/:spotId", requireAuth, async (req, res) => {
   const { spotId } = req.params;
   const currentUser = req.user.id;
@@ -398,6 +417,7 @@ router.delete("/:spotId", requireAuth, async (req, res) => {
   return res.status(200).json({ message: "Successfully deleted" });
 });
 
+//GET All spots
 router.get("/", validateQuery, async (req, res) => {
   let { size, page, minLat, maxLat, minLng, maxLng, minPrice, maxPrice } =
     req.query;
@@ -466,7 +486,8 @@ router.get("/", validateQuery, async (req, res) => {
   });
 });
 
-router.post("/:spotId/images", requireAuth, async (req, res) => {
+//POST Images using spotId
+router.post("/:spotId/images", [requireAuth, validateSpot], async (req, res) => {
   const providedId = req.params.spotId;
   const { url, preview } = req.body;
   const findSpot = await Spot.findByPk(providedId);
@@ -496,6 +517,7 @@ router.post("/:spotId/images", requireAuth, async (req, res) => {
   }
 });
 
+//POST Create a new spot
 router.post("/", [requireAuth, validateSpot], async (req, res) => {
   const { address, city, state, country, lat, lng, name, description, price } =
     req.body;
@@ -514,7 +536,7 @@ router.post("/", [requireAuth, validateSpot], async (req, res) => {
     price,
   });
 
-  res.json(newSpot);
+  return res.json(newSpot);
 });
 
 module.exports = router;
