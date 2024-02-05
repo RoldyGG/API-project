@@ -1,71 +1,69 @@
 const express = require("express");
-const { Review, ReviewImage, User, Spot } = require("../../db/models");
-// const { check } = require("express-validator");
-// const { handleValidationErrors } = require("../../utils/validation");
+const {
+  Review,
+  ReviewImage,
+  User,
+  Spot,
+  SpotImage,
+} = require("../../db/models");
+const { check } = require("express-validator");
+const { handleValidationErrors } = require("../../utils/validation");
 const { requireAuth } = require("../../utils/auth");
 const router = express.Router();
+const validateReview = [
+  check("review")
+    .exists({ checkFalsy: true })
+    .withMessage("Review text is required."),
+  check("stars")
+    .exists({ checkFalsy: true })
+    .isInt({ min: 1 }, { max: 5 })
+    .withMessage("Stars must be an integer from 1 to 5."),
+  handleValidationErrors,
+];
 
 router.get("/current", requireAuth, async (req, res) => {
-  const reviews = await Review.findAll({
-    include: [
-      {
-        model: User,
-        attributes: {
-          exclude: [
-            "username",
-            "hashedPassword",
-            "email",
-            "createdAt",
-            "updatedAt",
-          ],
-        },
+  const userId = req.user.id;
+
+  let reviews = await Review.findAll({
+      where: {userId: userId},
+      include: [{
+          model: User,
+          attributes: ['id', 'firstName', 'lastName']
       },
       {
-        model: Spot,
-        attributes: {
-          exclude: ["description", "createdAt", "updatedAt"],
-        },
+          model: Spot,
+          attributes: {
+              exclude: ['description', 'createdAt', 'updatedAt']
+          },
+          include:{
+              model: SpotImage,
+              attributes: ['url'],
+              where: {
+                  preview: true
+              },
+              required: false
+          }
       },
-      {
-        model: ReviewImage,
-        attributes: {
-          exclude: ["reviewId", "createdAt", "updatedAt"],
-        },
-      },
-    ],
-    where: { userId: req.user.id },
-    attributes: { exclude: ["userId"] },
+  {
+      model: ReviewImage,
+      attributes: ['id', 'url']
+      }]
   });
-  const reviewArray = [];
 
-  reviews.forEach((item) => {
-    const reviewObj = item.toJSON();
-    reviewArray.push(reviewObj);
+  // specifies spotImages to previewImages
+  reviews = reviews.map(review => {
+      let url = null;
+
+      if (review.Spot.SpotImages.length > 0) {
+          url = review.Spot.SpotImages[0].url;
+      }
+      review = review.toJSON();
+      review.Spot.previewImage = url;
+      delete review.Spot.SpotImages;
+
+      return review
   });
-  for (let i = 0; i < reviewArray.length; i++) {
-    let spotId = reviewsArr[i]["Spot"]["id"];
-    const spotImages = await SpotImage.findOne({
-      where: {
-        spotId: spotId,
-        preview: true,
-      },
-      attributes: ["url", "preview"],
-    });
-    if (spotImages) {
-      const previewImg = spotImg.toJSON();
-
-      const spot = reviewsArr[i]["Spot"];
-      spot.previewImage = previewImg.url;
-
-      reviewsArr[i].Spot = spot;
-    } else {
-      reviewsArr[i]["Spot"].previewImage = "no preview image set";
-    }
-  }
-  const currentUserObj = {};
-  currentUserObj.Reviews = reviewArray;
-
-  return res.json(currentUserObj);
+  res.json({Reviews: reviews})
 });
 
 router.post("/:reviewId/images", requireAuth, async (req, res) => {
@@ -101,7 +99,7 @@ router.post("/:reviewId/images", requireAuth, async (req, res) => {
   });
 });
 
-router.put("/:reviewId", requireAuth, async (req, res) => {
+router.put("/:reviewId", [requireAuth, validateReview], async (req, res) => {
   const { reviewId } = req.params;
   const { review, stars } = req.body;
   const currentUser = req.user.id;
