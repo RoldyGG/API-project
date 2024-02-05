@@ -6,20 +6,7 @@ module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
       // define association here
-      const relationship1 = {
-        through: models.Booking,
-        foreignKey: "userId",
-        otherKey: "spotId",
-        onDelete: "CASCADE",
-        hooks: true,
-      };
-      const relationship2 = {
-        through: models.Review,
-        foreignKey: "userId",
-        otherKey: "spotId",
-        onDelete: "CASCADE",
-        hooks: true,
-      };
+
       User.hasMany(models.Booking, {
         foreignKey: "userId",
         onDelete: "CASCADE",
@@ -35,8 +22,6 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "CASCADE",
         hooks: true,
       });
-      User.belongsToMany(models.Spot, relationship1);
-      User.belongsToMany(models.Spot, relationship2);
     }
   }
   User.init(
